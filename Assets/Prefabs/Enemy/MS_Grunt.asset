@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 27fe2179c7beda24c887614a8671a06b, type: 3}
+  m_Name: MS_Grunt
+  m_EditorClassIdentifier: 
+  speed: 4
+  acceleration: 80
+  airAcceleration: 30
+  ctrlSpeedMultiplier: 0.3
+  jumpForce: 11
+  maxJumpCount: 2
+  doubleJumpWindow: 1
+  fallGravityMultiplier: 0.6
+  rollSpeed: 10
+  rollDuration: 0.4
+  attackDashSpeed: 18
+  attackDashDuration: 0.12
