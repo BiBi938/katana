@@ -4,32 +4,16 @@ using UnityEngine;
 // 입력이 무엇인지(키보드/마우스 vs AI)는 전혀 모르고, 밖에서 SetMoveInput/RequestJump/
 // RequestRoll/RequestAttackDash로 지시받은 대로만 물리를 처리함. GroundSensor와 함께
 // Player, Enemy 등 물리 기반으로 걷는 캐릭터라면 그대로 재사용 가능.
-public struct MotorConfig
-{
-    public float speed;
-    public float acceleration;
-    public float airAcceleration;
-    public float ctrlSpeedMultiplier;
-
-    public float jumpForce;
-    public int maxJumpCount;
-    public float doubleJumpWindow;
-    public float fallGravityMultiplier;
-
-    public float rollSpeed;
-    public float rollDuration;
-
-    public float attackDashSpeed;
-    public float attackDashDuration;
-}
-
 [RequireComponent(typeof(Rigidbody2D), typeof(GroundSensor))]
 public class CharacterMotor : MonoBehaviour
 {
-    public MotorConfig Config { get; private set; }
+    // 이동 수치 데이터 에셋. 인스펙터에서 MotorSettings 에셋을 끌어다 연결함.
+    // 값을 복사해두지 않고 에셋을 참조하므로 플레이 중에 에셋 값을 바꾸면 바로 반영됨.
+    [SerializeField] MotorSettings settings;
+    public MotorSettings Settings => settings;
 
     public bool IsGrounded => groundSensor.IsGrounded;
-    public bool IsFalling => !IsGrounded && rigid.velocity.y < -0.01f && jumpCount >= Config.maxJumpCount;
+    public bool IsFalling => !IsGrounded && rigid.velocity.y < -0.01f && jumpCount >= Settings.maxJumpCount;
     public bool IsRolling => dashKind == DashState.Kind.Roll;
     public bool IsAttackDashing => dashKind == DashState.Kind.AttackDash;
 
@@ -48,10 +32,16 @@ public class CharacterMotor : MonoBehaviour
     bool wasGrounded;
     DashState.Kind? dashKind;
 
-    public void Configure(MotorConfig config) => Config = config;
-
     void Awake()
     {
+        // 인스펙터에서 에셋 연결을 빠뜨리면 FixedUpdate에서 매 프레임 NullReferenceException이 나므로 여기서 미리 알려줌
+        if (settings == null)
+        {
+            Debug.LogError($"{name}: CharacterMotor에 MotorSettings 에셋이 연결되지 않았습니다.", this);
+            enabled = false;
+            return;
+        }
+
         rigid = GetComponent<Rigidbody2D>();
         groundSensor = GetComponent<GroundSensor>();
         baseGravityScale = rigid.gravityScale;
@@ -64,7 +54,7 @@ public class CharacterMotor : MonoBehaviour
     {
         sm.Tick(Time.fixedDeltaTime);
 
-        rigid.gravityScale = rigid.velocity.y < 0f ? baseGravityScale * Config.fallGravityMultiplier : baseGravityScale;
+        rigid.gravityScale = rigid.velocity.y < 0f ? baseGravityScale * Settings.fallGravityMultiplier : baseGravityScale;
 
         UpdateGroundedState();
 
@@ -74,7 +64,7 @@ public class CharacterMotor : MonoBehaviour
             if (jumpWindowTimer <= 0f)
             {
                 jumpWindowTimer = 0f;
-                jumpCount = Config.maxJumpCount; // 제한 시간 안에 다음 점프를 안 쓰면 기회가 사라짐
+                jumpCount = Settings.maxJumpCount; // 제한 시간 안에 다음 점프를 안 쓰면 기회가 사라짐
             }
         }
     }
@@ -100,26 +90,26 @@ public class CharacterMotor : MonoBehaviour
 
     public bool RequestJump()
     {
-        if (jumpCount >= Config.maxJumpCount) return false;
+        if (jumpCount >= Settings.maxJumpCount) return false;
         if (jumpCount > 0 && jumpWindowTimer <= 0f) return false; // 제한 시간이 끝났으면 추가 점프 불가
 
         jumpCount++;
-        rigid.velocity = new Vector2(rigid.velocity.x, Config.jumpForce);
-        jumpWindowTimer = jumpCount < Config.maxJumpCount ? Config.doubleJumpWindow : 0f;
+        rigid.velocity = new Vector2(rigid.velocity.x, Settings.jumpForce);
+        jumpWindowTimer = jumpCount < Settings.maxJumpCount ? Settings.doubleJumpWindow : 0f;
         return true;
     }
 
     public bool RequestRoll(float dirX)
     {
         if (IsRolling) return false;
-        sm.ChangeState(new DashState(DashState.Kind.Roll, dirX, Config.rollSpeed, Config.rollDuration));
+        sm.ChangeState(new DashState(DashState.Kind.Roll, dirX, Settings.rollSpeed, Settings.rollDuration));
         return true;
     }
 
     public bool RequestAttackDash(float dirX)
     {
         if (IsRolling) return false; // 구르는 중엔 공격 불가
-        sm.ChangeState(new DashState(DashState.Kind.AttackDash, dirX, Config.attackDashSpeed, Config.attackDashDuration));
+        sm.ChangeState(new DashState(DashState.Kind.AttackDash, dirX, Settings.attackDashSpeed, Settings.attackDashDuration));
         return true;
     }
 

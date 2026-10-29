@@ -4,29 +4,13 @@ using UnityEngine.InputSystem;
 public class Player : MonoBehaviour
 {
     public Vector2 inputVec;
-    public float speed;
     Animator anim;
-
-    public float jumpForce = 12f;
-    public int maxJumpCount = 2;
-    public float fallGravityMultiplier = 1.6f; // 하강 중에는 중력을 더 세게 줘서 정점에서 늘어지지 않고 착지가 경쾌하게 느껴지도록 함
-
-    public float doubleJumpWindow = 1f; // 이전 점프 후 다음 점프를 쓸 수 있는 제한 시간(초)
-
-    public float rollSpeed = 10f;
-    public float rollDuration = 0.4f;
-
-    public float ctrlSpeedMultiplier = 0.5f; // Ctrl을 누르고 있을 때 x방향 이동 속도 배율
 
     public float attackRange = 5f;
     public Vector2 attackTarget;
-    public float attackDashSpeed = 18f;
-    public float attackDashDuration = 0.12f;
-
-    public float acceleration = 40f;     // 지상에서 목표 속도로 다가가는 빠르기
-    public float airAcceleration = 10f;  // 공중에서는 더 느리게 다가가게 해서 점프 관성이 유지되게 함
 
     // 이동/점프/중력/구르기/공격대시 같은 물리 처리는 CharacterMotor(+ GroundSensor)가 전담.
+    // 이동 수치는 CharacterMotor에 연결된 MotorSettings 에셋에서 조절함.
     // Player는 입력을 해석해서 motor에 지시만 내리고, 애니메이터 파라미터를 갱신하는 역할만 함.
     CharacterMotor motor;
 
@@ -58,22 +42,6 @@ public class Player : MonoBehaviour
         anim = GetComponent<Animator>();
         effectPlayer = GetComponent<EffectPlayer>();
         motor = GetComponent<CharacterMotor>();
-
-        motor.Configure(new MotorConfig
-        {
-            speed = speed,
-            acceleration = acceleration,
-            airAcceleration = airAcceleration,
-            ctrlSpeedMultiplier = ctrlSpeedMultiplier,
-            jumpForce = jumpForce,
-            maxJumpCount = maxJumpCount,
-            doubleJumpWindow = doubleJumpWindow,
-            fallGravityMultiplier = fallGravityMultiplier,
-            rollSpeed = rollSpeed,
-            rollDuration = rollDuration,
-            attackDashSpeed = attackDashSpeed,
-            attackDashDuration = attackDashDuration,
-        });
     }
 
     void OnMove(InputValue value)

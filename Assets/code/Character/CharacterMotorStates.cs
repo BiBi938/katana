@@ -9,8 +9,8 @@ public class MoveState : IState<CharacterMotor>
 
     public void Tick(CharacterMotor motor, float dt)
     {
-        float targetVelocityX = motor.MoveInputX * motor.Config.speed * (motor.SlowedInput ? motor.Config.ctrlSpeedMultiplier : 1f);
-        float accel = motor.IsGrounded ? motor.Config.acceleration : motor.Config.airAcceleration;
+        float targetVelocityX = motor.MoveInputX * motor.Settings.speed * (motor.SlowedInput ? motor.Settings.ctrlSpeedMultiplier : 1f);
+        float accel = motor.IsGrounded ? motor.Settings.acceleration : motor.Settings.airAcceleration;
         float newVelocityX = Mathf.MoveTowards(motor.VelocityX, targetVelocityX, accel * dt);
         motor.ApplyHorizontalVelocity(newVelocityX);
     }
